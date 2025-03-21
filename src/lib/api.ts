@@ -1,22 +1,15 @@
 import { PortfolioData, NFTCollection } from './types';
 
-const API_KEY = process.env.NEXT_PUBLIC_COINSTATS_API_KEY;
-const BASE_URL = 'https://api.coinstats.app/public/v1';
-
 export async function getEthPrice(): Promise<number> {
   try {
-    const response = await fetch(`${BASE_URL}/coins/ethereum`, {
-      headers: {
-        'accept': 'application/json',
-      },
-    });
+    const response = await fetch('/api/eth-price');
     
     if (!response.ok) {
       throw new Error('Failed to fetch ETH price');
     }
 
     const data = await response.json();
-    return data.coin?.price || 0;
+    return data.price || 0;
   } catch (error) {
     console.error('Error fetching ETH price:', error);
     return 0;
@@ -29,11 +22,7 @@ export async function getNFTPortfolio(walletAddress: string): Promise<PortfolioD
     const ethPrice = await getEthPrice();
 
     // Fetch NFTs for the wallet
-    const nftResponse = await fetch(`${BASE_URL}/nfts/address/${walletAddress}`, {
-      headers: {
-        'accept': 'application/json',
-      },
-    });
+    const nftResponse = await fetch(`/api/nft-portfolio/${walletAddress}`);
 
     if (!nftResponse.ok) {
       throw new Error('Failed to fetch NFT data');
