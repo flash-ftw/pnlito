@@ -12,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
     }
 
-    const response = await fetch(`https://api.coinstats.app/public/v1/nfts/address/${params.address}`, {
+    const response = await fetch(`https://api.coinstats.app/public/v1/nfts/address/${params.address}?chain=ethereum`, {
       headers: {
         'accept': 'application/json',
         'X-API-KEY': apiKey,
@@ -29,7 +29,7 @@ export async function GET(
     const data = await response.json();
     
     // Check if we have the expected data structure
-    if (!data || !Array.isArray(data.result)) {
+    if (!data || !data.result || !Array.isArray(data.result)) {
       console.error('Unexpected API response format:', data);
       throw new Error('Invalid API response format');
     }

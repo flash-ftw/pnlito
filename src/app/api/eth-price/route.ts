@@ -9,7 +9,7 @@ export async function GET() {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
     }
 
-    const response = await fetch('https://api.coinstats.app/public/v1/coins/ethereum', {
+    const response = await fetch('https://api.coinstats.app/public/v1/coins/ethereum?currency=USD', {
       headers: {
         'accept': 'application/json',
         'X-API-KEY': apiKey,
@@ -25,12 +25,12 @@ export async function GET() {
 
     const data = await response.json();
     
-    if (!data || !data.result || typeof data.result.price !== 'number') {
+    if (!data || !data.result || !data.result.coin || typeof data.result.coin.price !== 'number') {
       console.error('Unexpected API response format:', data);
       throw new Error('Invalid API response format');
     }
 
-    return NextResponse.json({ price: data.result.price });
+    return NextResponse.json({ price: data.result.coin.price });
   } catch (error) {
     console.error('Error fetching ETH price:', error);
     return NextResponse.json({ error: 'Failed to fetch ETH price' }, { status: 500 });
