@@ -30,27 +30,37 @@ export async function getNFTPortfolio(walletAddress: string): Promise<PortfolioD
 
     const nftData = await nftResponse.json();
     
+    // Ensure we have NFT data
+    if (!nftData || !Array.isArray(nftData)) {
+      console.error('Invalid NFT data format:', nftData);
+      throw new Error('Invalid NFT data format');
+    }
+
     // Group NFTs by collection
     const collectionMap = new Map<string, NFTCollection>();
     
-    nftData.nfts.forEach((nft: any) => {
-      const collectionId = nft.collectionId || nft.contractAddress;
+    nftData.forEach((nft: any) => {
+      if (!nft || typeof nft !== 'object') return;
+
+      const collectionId = nft.collectionId || nft.contractAddress || 'unknown';
+      const floorPrice = parseFloat(nft.floorPrice) || 0;
+      
       if (!collectionMap.has(collectionId)) {
         collectionMap.set(collectionId, {
-          name: nft.collectionName || 'Unknown Collection',
+          name: nft.collectionName || nft.name || 'Unknown Collection',
           symbol: nft.symbol || '-',
-          floorPriceEth: nft.floorPrice || 0,
-          floorPriceUsd: (nft.floorPrice || 0) * ethPrice,
+          floorPriceEth: floorPrice,
+          floorPriceUsd: floorPrice * ethPrice,
           assetsCount: 1,
-          totalValueEth: nft.floorPrice || 0,
-          totalValueUsd: (nft.floorPrice || 0) * ethPrice,
+          totalValueEth: floorPrice,
+          totalValueUsd: floorPrice * ethPrice,
           chain: nft.chain || 'ethereum',
         });
       } else {
         const collection = collectionMap.get(collectionId)!;
         collection.assetsCount += 1;
-        collection.totalValueEth += nft.floorPrice || 0;
-        collection.totalValueUsd += (nft.floorPrice || 0) * ethPrice;
+        collection.totalValueEth += floorPrice;
+        collection.totalValueUsd += floorPrice * ethPrice;
       }
     });
 

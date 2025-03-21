@@ -17,7 +17,25 @@ export async function GET(
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // Check if we have the expected data structure
+    if (!data || !Array.isArray(data.result)) {
+      console.error('Unexpected API response format:', data);
+      throw new Error('Invalid API response format');
+    }
+
+    // Transform the data to match our expected format
+    const nfts = data.result.map((nft: any) => ({
+      collectionId: nft.contractAddress,
+      contractAddress: nft.contractAddress,
+      collectionName: nft.collectionName || nft.name || 'Unknown Collection',
+      name: nft.name,
+      symbol: nft.symbol || '-',
+      floorPrice: nft.floorPrice || 0,
+      chain: nft.chain || 'ethereum'
+    }));
+
+    return NextResponse.json(nfts);
   } catch (error) {
     console.error('Error fetching NFT data:', error);
     return NextResponse.json({ error: 'Failed to fetch NFT data' }, { status: 500 });
